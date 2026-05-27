@@ -4,10 +4,10 @@ FitTrack is a web-based fitness management system designed to help users track t
 🔹 Major Module
 Dashboard
 BMI Calculator
-Workout Tracking
+Nutrition system
 🔹 Minor Module
 Trainer Chat System 💬
-Nutrition Tracking
+Progress Record
 🛠️ Technologies Used
 Frontend: HTML, CSS, JavaScript
 Backend: Node.js (Express)
