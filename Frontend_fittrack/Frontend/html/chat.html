@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitTrack – Chat</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: #0a0a0a;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            width: 260px; min-width: 260px;
+            height: 100vh;
+            background: #0b0b0b;
+            border-right: 1px solid #1a1a1a;
+            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo { font-size: 20px; font-weight: 900; letter-spacing: 3px; }
+        .logo span { color: #ffc400; }
+        .logo-sub { font-size: 11px; color: #555; margin-top: 3px; margin-bottom: 24px; }
+
+        .menu { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+        .menu li {
+            padding: 11px 14px; border-radius: 10px;
+            color: #888; cursor: pointer; font-size: 13px; transition: all 0.2s;
+        }
+        .menu li:hover { background: #1a1a1a; color: white; }
+        .menu li.active { background: #ffc400; color: black; font-weight: bold; }
+
+        .chatting-with {
+            margin-top: 24px;
+            background: #1a1500;
+            border: 1px solid #ffc40033;
+            border-radius: 12px;
+            padding: 14px;
+        }
+        .chatting-with .label {
+            font-size: 10px; color: #ffc400;
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;
+        }
+        .chatting-with .person {
+            display: flex; align-items: center; gap: 10px;
+        }
+        .chatting-with .av {
+            width: 38px; height: 38px; border-radius: 50%;
+            background: #ffc400; color: black; font-weight: 900;
+            font-size: 15px; display: flex; align-items: center; justify-content: center;
+        }
+        .chatting-with .name { font-size: 14px; font-weight: bold; }
+        .chatting-with .role { font-size: 11px; color: #888; margin-top: 2px; }
+
+        .back-btn {
+            margin-top: 14px;
+            width: 100%;
+            padding: 10px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 9px;
+            color: #ccc;
+            font-size: 13px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .back-btn:hover { background: #222; color: white; border-color: #444; }
+
+        /* ── Right: chat ── */
+        .chat-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 24px;
+            background: #0e0e0e;
+            border-bottom: 1px solid #1a1a1a;
+            min-height: 68px;
+            flex-shrink: 0;
+        }
+        .chat-header .av {
+            width: 44px; height: 44px; border-radius: 50%;
+            background: #ffc400; color: black; font-weight: 900;
+            font-size: 18px; display: flex; align-items: center; justify-content: center;
+        }
+        .chat-header .info h3 { font-size: 16px; }
+        .chat-header .info p  { font-size: 12px; color: #666; margin-top: 2px; }
+
+        .logout-btn {
+            margin-left: auto;
+            background: #ffc400; color: black;
+            font-weight: bold; font-size: 13px;
+            padding: 8px 16px; border-radius: 8px;
+            border: none; cursor: pointer;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 22px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .msg {
+            max-width: 60%;
+            padding: 11px 15px;
+            border-radius: 14px;
+            font-size: 14px;
+            line-height: 1.55;
+            word-break: break-word;
+        }
+        .msg .time { font-size: 10px; margin-top: 5px; }
+        .msg.sent {
+            align-self: flex-end;
+            background: #ffc400; color: black;
+            border-bottom-right-radius: 3px;
+        }
+        .msg.sent .time { color: #7a6000; text-align: right; }
+        .msg.received {
+            align-self: flex-start;
+            background: #1c1c1c; color: white;
+            border-bottom-left-radius: 3px;
+        }
+        .msg.received .time { color: #555; }
+
+        .empty-msg {
+            margin: auto;
+            text-align: center; color: #333; font-size: 14px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .empty-msg .icon { font-size: 46px; margin-bottom: 10px; }
+
+        .quick-actions {
+            display: flex; flex-wrap: wrap; gap: 7px;
+            padding: 10px 24px;
+            border-top: 1px solid #111;
+            flex-shrink: 0;
+        }
+        .qa-btn {
+            background: #111; border: 1px solid #2a2a2a; color: #999;
+            border-radius: 20px; padding: 6px 13px; font-size: 11px;
+            cursor: pointer; transition: all 0.2s; white-space: nowrap;
+        }
+        .qa-btn:hover { border-color: #ffc400; color: #ffc400; background: #1a1500; }
+
+        .input-row {
+            display: flex; gap: 10px;
+            padding: 14px 24px;
+            background: #0e0e0e;
+            border-top: 1px solid #1a1a1a;
+            flex-shrink: 0;
+        }
+        .input-row input {
+            flex: 1; padding: 13px 16px;
+            background: #1a1a1a; border: 1px solid #2e2e2e;
+            border-radius: 10px; color: white; font-size: 14px;
+            outline: none; transition: border 0.2s;
+        }
+        .input-row input:focus { border-color: #ffc400; }
+        .input-row input::placeholder { color: #444; }
+
+        .send-btn {
+            padding: 13px 22px;
+            background: #ffc400; color: black;
+            font-weight: bold; font-size: 14px;
+            border: none; border-radius: 10px;
+            cursor: pointer; transition: background 0.2s;
+        }
+        .send-btn:hover { background: #e6b000; }
+    </style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<div class="sidebar">
+    <div class="logo">FIT<span>TRACK</span></div>
+    <div class="logo-sub">Fitness Management</div>
+    <ul class="menu" id="sideMenu"></ul>
+
+    <div class="chatting-with" id="chattingWith" style="display:none">
+        <div class="label">💬 Chatting with</div>
+        <div class="person">
+            <div class="av" id="sideAv"></div>
+            <div>
+                <div class="name" id="sideName"></div>
+                <div class="role" id="sideRole"></div>
+            </div>
+        </div>
+        <button class="back-btn" id="backBtn" style="display:none"
+                onclick="location.href='trainer_to_client.html'">
+            ← Back to Client List
+        </button>
+    </div>
+</div>
+
+<!-- ═══ CHAT ═══ -->
+<div class="chat-wrap">
+
+    <div class="chat-header">
+        <div class="av" id="headerAv"></div>
+        <div class="info">
+            <h3 id="headerName"></h3>
+            <p  id="headerSub"></p>
+        </div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+
+    <div class="messages" id="messages">
+        <div class="empty-msg" id="emptyMsg">
+            <div class="icon">💬</div>
+            <p>No messages yet — say hello! 👋</p>
+        </div>
+    </div>
+
+    <div class="quick-actions" id="quickActions" style="display:none">
+        <button class="qa-btn" onclick="quickSend('✅ Great work today! Keep it up 💪')">Great work!</button>
+        <button class="qa-btn" onclick="quickSend('📋 Workout for today:\n• 3×10 Squats\n• 3×12 Push-ups\n• 3×10 Deadlifts\n• 20 min Cardio')">Send Workout</button>
+        <button class="qa-btn" onclick="quickSend('📊 Please log your progress for this week.')">Request Progress</button>
+        <button class="qa-btn" onclick="quickSend('💧 Drink 2–3L of water today!')">Hydration</button>
+        <button class="qa-btn" onclick="quickSend('🔥 Push harder — I know you can do it!')">Motivate</button>
+    </div>
+
+    <div class="input-row">
+        <input type="text" id="msgInput"
+               placeholder="Type a message and press Enter…"
+               onkeydown="if(event.key==='Enter') sendMessage()" />
+        <button class="send-btn" onclick="sendMessage()">Send ➤</button>
+    </div>
+
+</div>
+
+<script>
+// ── Session ────────────────────────────────────────────────
+const session = JSON.parse(localStorage.getItem("fittrack_session") || "null");
+if (!session) { window.location.href = "index.html"; }
+
+const isTrainer = session.role === "trainer";
+
+// ── Who are we chatting with? ──────────────────────────────
+let OTHER_ID   = null;
+let OTHER_NAME = null;
+
+if (isTrainer) {
+    // FIX: Don't immediately delete the target — keep it so page reloads survive
+    const target = JSON.parse(localStorage.getItem("fittrack_chat_target") || "null");
+    if (!target) {
+        alert("Please select a client from your client list first.");
+        window.location.href = "trainer_to_client.html";
+    } else {
+        // FIX: Removed the premature localStorage.removeItem here.
+        // Remove only when the trainer explicitly navigates away (back button).
+        OTHER_ID   = target.id;
+        OTHER_NAME = target.name;
+    }
+} else {
+    if (!session.assignedTrainerId) {
+        alert("You are not assigned to a trainer yet.");
+        window.location.href = "dashboard.html";
+    } else {
+        OTHER_ID   = session.assignedTrainerId;
+        OTHER_NAME = session.assignedTrainerName;
+    }
+}
+
+// ── Sidebar nav ────────────────────────────────────────────
+document.getElementById("sideMenu").innerHTML = isTrainer ? `
+    <li onclick="location.href='trainerdashboard.html'">Dashboard</li>
+    <li onclick="location.href='trainer_to_client.html'">View Clients</li>
+    <li>Workout Suggestion</li>
+    <li class="active">Chat</li>
+` : `
+    <li onclick="location.href='dashboard.html'">Dashboard</li>
+    <li onclick="location.href='bmi-calculator.html'">BMI Calculator</li>
+    <li onclick="location.href='workout.html'">Workout Plan</li>
+    <li onclick="location.href='nutrition.html'">Nutrition</li>
+    <li onclick="location.href='progress.html'">Progress</li>
+    <li class="active">Trainer Chat 💬</li>
+    <li onclick="location.href='exercise.html'">Exercise Library</li>
+`;
+
+// ── Populate header + sidebar info ────────────────────────
+function initUI() {
+    if (!OTHER_ID) return;
+
+    const ini = OTHER_NAME.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+    const sub = isTrainer ? "Your Client" : "⚡ Your Trainer";
+
+    document.getElementById("headerAv").textContent   = ini;
+    document.getElementById("headerName").textContent = OTHER_NAME;
+    document.getElementById("headerSub").textContent  = sub;
+
+    document.getElementById("sideAv").textContent   = ini;
+    document.getElementById("sideName").textContent  = OTHER_NAME;
+    document.getElementById("sideRole").textContent  = sub;
+    document.getElementById("chattingWith").style.display = "block";
+
+    if (isTrainer) {
+        document.getElementById("backBtn").style.display = "block";
+        document.getElementById("quickActions").style.display = "flex";
+    }
+}
+
+// ── Chat storage key ───────────────────────────────────────
+// FIX: Normalize IDs to strings before sorting to prevent mismatches
+// caused by one side storing a number and the other a string.
+function chatKey() {
+    const ids = [String(session.id), String(OTHER_ID)].sort();
+    return "fittrack_chat_" + ids.join("_");
+}
+
+// ── XSS-safe text escaping ─────────────────────────────────
+// FIX: Never inject raw user text into innerHTML.
+// Escape HTML entities first, then convert newlines to <br>.
+function escapeHTML(str) {
+    return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+// ── Render messages ────────────────────────────────────────
+let lastMessageCount = -1; // used by the poller to skip unnecessary re-renders
+
+function renderMessages(forceScroll) {
+    const msgs  = JSON.parse(localStorage.getItem(chatKey()) || "[]");
+    const box   = document.getElementById("messages");
+    const empty = document.getElementById("emptyMsg");
+
+    // FIX: Skip re-render if nothing changed (reduces flicker during polling)
+    if (!forceScroll && msgs.length === lastMessageCount) return;
+    lastMessageCount = msgs.length;
+
+    if (msgs.length === 0) {
+        // FIX: Clear box content and re-attach empty state cleanly
+        box.innerHTML = "";
+        box.appendChild(empty);
+        empty.style.display = "flex";
+        return;
+    }
+
+    // Hide the empty-msg element before rendering real messages
+    empty.style.display = "none";
+
+    const wasAtBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 60;
+
+    box.innerHTML = msgs.map(m => {
+        const sent = String(m.senderId) === String(session.id);
+        // FIX: Use escapeHTML to prevent XSS from message content
+        const safeText = escapeHTML(m.text).replace(/\n/g, "<br>");
+        return `
+        <div class="msg ${sent ? "sent" : "received"}">
+            ${safeText}
+            <div class="time">${escapeHTML(m.time)}</div>
+        </div>`;
+    }).join("");
+
+    // Scroll to bottom only if user was already near the bottom, or forced
+    if (forceScroll || wasAtBottom) {
+        box.scrollTop = box.scrollHeight;
+    }
+}
+
+// ── Send message ───────────────────────────────────────────
+function sendMessage() {
+    const input = document.getElementById("msgInput");
+    const text  = input.value.trim();
+    if (!text) { input.focus(); return; }
+
+    const msgs = JSON.parse(localStorage.getItem(chatKey()) || "[]");
+    msgs.push({
+        senderId:   session.id,
+        senderName: session.firstname + " " + session.lastname,
+        text,
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    });
+    localStorage.setItem(chatKey(), JSON.stringify(msgs));
+    input.value = "";
+    input.focus();
+    lastMessageCount = -1; // force re-render
+    renderMessages(true);
+}
+
+// ── Quick send ─────────────────────────────────────────────
+// FIX: Added input clear + focus after quick send for consistency
+function quickSend(text) {
+    const msgs = JSON.parse(localStorage.getItem(chatKey()) || "[]");
+    msgs.push({
+        senderId:   session.id,
+        senderName: session.firstname + " " + session.lastname,
+        text,
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    });
+    localStorage.setItem(chatKey(), JSON.stringify(msgs));
+    lastMessageCount = -1;
+    renderMessages(true);
+    document.getElementById("msgInput").focus();
+}
+
+// ── Logout ─────────────────────────────────────────────────
+function logout() {
+    localStorage.removeItem("fittrack_session");
+    localStorage.removeItem("isLoggedIn");
+    // FIX: Also clean up chat target on logout
+    localStorage.removeItem("fittrack_chat_target");
+    window.location.href = "index.html";
+}
+
+// ── Back button: clean up target before navigating ─────────
+const backBtn = document.getElementById("backBtn");
+if (backBtn) {
+    backBtn.addEventListener("click", function(e) {
+        e.preventDefault();
+        // FIX: Remove target only when trainer deliberately navigates away
+        localStorage.removeItem("fittrack_chat_target");
+        window.location.href = "trainer_to_client.html";
+    });
+}
+
+setInterval(function() {
+    const msgs = JSON.parse(localStorage.getItem(chatKey()) || "[]");
+    if (msgs.length !== lastMessageCount) {
+        lastMessageCount = msgs.length;
+        renderMessages(false);
+    }
+}, 2000);
+
+// ── Start ──────────────────────────────────────────────────
+initUI();
+renderMessages(true);
+</script>
+</body>
+</html>
