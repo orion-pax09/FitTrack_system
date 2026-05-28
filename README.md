@@ -20,7 +20,7 @@ Design Tool: Figma
 https://www.figma.com/make/5Sl2Huiv15qMF3EMjz4zvX/Gym-Fitness-Management-System?t=RogphH0ZurBErGZS-1
 
 🎥 YouTube Demo Link
-https://youtu.be/xM-_DCUikv8
+https://youtu.be/SeysJhk3rlE?si=dOo0iX98XzeaRmIf
 📊 Features
  -User Authentication (Client & Trainer)
  -BMI Calculator
